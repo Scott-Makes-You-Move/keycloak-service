@@ -4,11 +4,8 @@ WORKDIR /build
 
 COPY keycloak-extensions/ keycloak-extensions/
 
-ARG PROFILE=local
-ENV PROFILE=${PROFILE}
-
 # Build the Keycloak extensions JAR
-RUN mvn -P${PROFILE} clean package -f keycloak-extensions/pom.xml
+RUN mvn -Pcloud clean package -f keycloak-extensions/pom.xml
 
 # Stage 2: Build Keycloak with the extension
 FROM quay.io/keycloak/keycloak:23.0.7 AS keycloak-builder
@@ -35,16 +32,15 @@ COPY --from=keycloak-builder /opt/keycloak/ /opt/keycloak/
 ENV ACTIVE_PROFILE=$PROFILE
 
 ## Database
-ENV KC_DB=$DB_VENDOR
-ENV KC_DB_URL=$DB_URL
-ENV KC_DB_USERNAME=$DB_USERNAME
-ENV KC_DB_USERNAME=$DB_USERNAME
-ENV KC_DB_PASSWORD=$DB_PASSWORD
+ENV KC_DB=postgres
+ENV KC_DB_URL=jdbc:postgresql://smym-db-server.postgres.database.azure.com:5432/keycloakdockertest
+ENV KC_DB_USERNAME=db_admin
+ENV KC_DB_PASSWORD=Nadpy9-kytnoj-vezner
 
-ENV KEYCLOAK_ADMIN=$ADMIN_USER
-ENV KEYCLOAK_ADMIN_PASSWORD=$ADMIN_PASSWORD
+ENV KEYCLOAK_ADMIN=admin
+ENV KEYCLOAK_ADMIN_PASSWORD=Nadpy9-kytnoj-vezner
 
-ENV KC_FEATURES=$ENABLE_FEATURES
+ENV KC_FEATURES=declarative-user-profile
 
 EXPOSE 8080
 
