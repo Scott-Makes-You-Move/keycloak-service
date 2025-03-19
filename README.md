@@ -9,15 +9,15 @@ This project extends Keycloak by implementing a **custom event listener** that l
 - **PostgreSQL Database Integration**: Uses PostgreSQL as the Keycloak database.
 
 ## 🛠️ Project Structure
-    ```
-    keycloak-service/
-    │── keycloak-extensions/   # Contains custom Keycloak extensions
-    │   ├── src/
-    │   ├── target/
-    │   ├── pom.xml
-    │── Dockerfile             # Builds and runs the Keycloak service
-    │── pom.xml                # Main project configuration
-    ```
+```
+keycloak-service/
+│── keycloak-extensions/   # Contains custom Keycloak extensions
+│   ├── src/
+│   ├── target/
+│   ├── pom.xml
+│── Dockerfile             # Builds and runs the Keycloak service
+│── pom.xml                # Main project configuration
+```
 
 ## ⚙️ Requirements
 - **Java 17+**
