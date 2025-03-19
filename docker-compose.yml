@@ -1,0 +1,43 @@
+services:
+  keycloak:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smym-keycloak
+    ports:
+      - "8080:8080"
+    environment:
+      - KC_DB=${DB_VENDOR}
+      - KC_DB_URL=${DB_URL}
+      - KC_DB_USERNAME=${DB_USERNAME}
+      - KC_DB_PASSWORD=${DB_PASSWORD}
+      - ACTIVE_PROFILE=${PROFILE}
+      - KEYCLOAK_ADMIN=${ADMIN_USER}
+      - KEYCLOAK_ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - KC_FEATURES=${ENABLE_FEATURES}
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:15
+    container_name: keycloak-db
+    restart: always
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}" ]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  pg_data:
