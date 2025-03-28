@@ -3,20 +3,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: smym-keycloak
+    container_name: keycloak
     ports:
       - "8080:8080"
-    environment:
-      - KC_DB=${DB_VENDOR}
-      - KC_DB_URL=${DB_URL}
-      - KC_DB_USERNAME=${DB_USERNAME}
-      - KC_DB_PASSWORD=${DB_PASSWORD}
-      - ACTIVE_PROFILE=${PROFILE}
-      - KEYCLOAK_ADMIN=${ADMIN_USER}
-      - KEYCLOAK_ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - KC_FEATURES=${ENABLE_FEATURES}
     env_file:
       - .env
+    volumes:
+      - ./bootstrap/realm-export.json:/opt/keycloak/data/import/realm-export.json
     depends_on:
       postgres:
         condition: service_healthy

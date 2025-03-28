@@ -1,5 +1,6 @@
 package providers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
@@ -7,8 +8,8 @@ import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import model.Token;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -16,22 +17,32 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Objects;
-import java.util.Properties;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.MediaType.WILDCARD;
-import static org.apache.http.HttpHeaders.ACCEPT;
-import static org.apache.http.HttpHeaders.CONTENT_TYPE;
+import static org.apache.http.HttpHeaders.*;
+import static org.keycloak.utils.MediaType.APPLICATION_FORM_URLENCODED;
 
 public class UserEventListenerProvider implements EventListenerProvider {
-    public static final Logger logger = LoggerFactory.getLogger(UserEventListenerProvider.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserEventListenerProvider.class);
+    private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
 
     public static final String USERS_RESOURCE_PATH = "users/";
-
-    public static final String ACTIVE_PROFILE = Objects.nonNull(System.getenv("ACTIVE_PROFILE"))
-            ? System.getenv("ACTIVE_PROFILE")
-            : "local";
-    public static final String PROPERTY_FILE = "/opt/keycloak/conf/application-" + ACTIVE_PROFILE + ".properties";
+    public static final String ACCOUNT_REST_ENDPOINT = Objects.nonNull(System.getenv("ACCOUNT_REST_ENDPOINT"))
+            ? System.getenv("ACCOUNT_REST_ENDPOINT")
+            : "http://host.docker.internal:9000/api/v1/account";
+    public static final String TOKEN_REST_ENDPOINT = Objects.nonNull(System.getenv("ACCOUNT_REST_ENDPOINT"))
+            ? System.getenv("ACCOUNT_REST_ENDPOINT")
+            : "http://localhost:8080/realms/myrealm/protocol/openid-connect/token";
+    public static final String CLIENT_ID = Objects.nonNull(System.getenv("CLIENT_ID"))
+            ? System.getenv("CLIENT_ID")
+            : "event-listener-client";
+    public static final String GRANT_TYPE = Objects.nonNull(System.getenv("GRANT_TYPE"))
+            ? System.getenv("GRANT_TYPE")
+            : "client_credentials";
+    public static final String CLIENT_SECRET = Objects.nonNull(System.getenv("CLIENT_SECRET"))
+            ? System.getenv("CLIENT_SECRET")
+            : "event-listener-secret";
 
     @Override
     public void onEvent(Event event) {
@@ -43,7 +54,7 @@ public class UserEventListenerProvider implements EventListenerProvider {
         ResourceType resourceType = adminEvent.getResourceType();
 
         if (resourceType.equals(ResourceType.USER)) {
-            logger.info("Admin event of resource type user event found. Handling account event.");
+            logger.info("Admin event with resource type 'USER' found.");
             String resourcePath = adminEvent.getResourcePath();
 
             if (resourcePath.startsWith(USERS_RESOURCE_PATH)) {
@@ -54,31 +65,21 @@ public class UserEventListenerProvider implements EventListenerProvider {
     }
 
     private static void handleAccountEvent(OperationType type, String userId) {
-        Properties properties = new Properties();
-
-        try (FileInputStream fileInputStream = new FileInputStream(PROPERTY_FILE)) {
-            HttpClient httpClient = HttpClient.newHttpClient();
-            properties.load(fileInputStream);
-            String accountRestEndpoint = properties.get("account.rest.endpoint").toString();
-            String leaderboardRestEndpoint = properties.get("leaderboard.rest.endpoint").toString();
-
+        try {
             switch (type) {
                 case CREATE:
-                    executeCreateAccountRequest(userId, accountRestEndpoint, httpClient);
-                    executeCreateLeaderboardRequest(userId, leaderboardRestEndpoint, httpClient);
+                    executeCreateAccountRequest(userId);
                     break;
 
                 case DELETE:
-                    executeDeleteAccountRequest(userId, accountRestEndpoint, httpClient);
-                    executeDeleteLeaderboardRequest(userId, leaderboardRestEndpoint, httpClient);
+                    executeDeleteAccountRequest(userId);
                     break;
 
                 default:
                     logger.warn("Unknown operation type [{}]", type);
             }
-        } catch (Exception e) {
-            logger.info("Something went wrong when processing account event");
-            logger.error(e.getMessage());
+        } catch (URISyntaxException | IOException | InterruptedException e) {
+            logger.error("Error handling account event", e);
         }
     }
 
@@ -87,53 +88,59 @@ public class UserEventListenerProvider implements EventListenerProvider {
 
     }
 
-    private static void executeCreateAccountRequest(String userId, String accountRestEndpoint, HttpClient httpClient) throws URISyntaxException, IOException, InterruptedException {
-        logger.info("Executing POST Account REST API at [{}]", accountRestEndpoint);
-        HttpRequest createAccountRequest = HttpRequest.newBuilder(new URI(accountRestEndpoint))
+    private static void executeCreateAccountRequest(String userId) throws URISyntaxException, IOException, InterruptedException {
+        logger.info("CREATE operation type found. Executing POST Account REST API at [{}]", ACCOUNT_REST_ENDPOINT);
+        String accessToken = getAccessToken();
+        HttpRequest createAccountRequest = HttpRequest.newBuilder(new URI(ACCOUNT_REST_ENDPOINT))
                 .header(CONTENT_TYPE, APPLICATION_JSON)
+                .headers(AUTHORIZATION, String.format("Bearer %s", accessToken))
                 .POST(createAccountRequestBody(userId))
                 .build();
 
-        var response = httpClient.send(createAccountRequest, HttpResponse.BodyHandlers.ofString());
+        var response = HTTP_CLIENT.send(createAccountRequest, HttpResponse.BodyHandlers.ofString());
         logger.info("POST Account Response [{}]", response.statusCode());
     }
 
-    private static void executeCreateLeaderboardRequest(String userId, String leaderboardRestEndpoint, HttpClient httpClient) throws URISyntaxException, IOException, InterruptedException {
-        logger.info("Executing POST Leaderboard REST API at [{}]", leaderboardRestEndpoint);
-        HttpRequest createAccountRequest = HttpRequest.newBuilder(new URI(leaderboardRestEndpoint))
-                .header(CONTENT_TYPE, APPLICATION_JSON)
-                .POST(createLeaderboardRequestBody(userId))
-                .build();
-
-        var response = httpClient.send(createAccountRequest, HttpResponse.BodyHandlers.ofString());
-        logger.info("POST Leaderboard Response [{}]", response.statusCode());
-    }
-
-    private static void executeDeleteAccountRequest(String userId, String accountRestEndpoint, HttpClient httpClient) throws URISyntaxException, IOException, InterruptedException {
-        logger.info("Executing DELETE Account REST API at [{}]", accountRestEndpoint);
-        HttpRequest deleteAccountRequest = HttpRequest.newBuilder(new URI(accountRestEndpoint + "/" + userId))
+    private static void executeDeleteAccountRequest(String userId) throws URISyntaxException, IOException, InterruptedException {
+        logger.info("DELETE operation type found. Executing DELETE Account REST API at [{}]", ACCOUNT_REST_ENDPOINT);
+        String accessToken = getAccessToken();
+        HttpRequest deleteAccountRequest = HttpRequest.newBuilder(new URI(ACCOUNT_REST_ENDPOINT + "/" + userId))
                 .header(ACCEPT, WILDCARD)
+                .headers(AUTHORIZATION, String.format("Bearer %s", accessToken))
                 .DELETE()
                 .build();
-        var response = httpClient.send(deleteAccountRequest, HttpResponse.BodyHandlers.ofString());
+        var response = HTTP_CLIENT.send(deleteAccountRequest, HttpResponse.BodyHandlers.ofString());
         logger.info("DELETE Account Response [{}]", response.statusCode());
-    }
-
-    private static void executeDeleteLeaderboardRequest(String userId, String leaderboardRestEndpoint, HttpClient httpClient) throws URISyntaxException, IOException, InterruptedException {
-        logger.info("Executing DELETE Leaderboard REST API at [{}]", leaderboardRestEndpoint);
-        HttpRequest deleteAccountRequest = HttpRequest.newBuilder(new URI(leaderboardRestEndpoint + "/" + userId))
-                .header(ACCEPT, WILDCARD)
-                .DELETE()
-                .build();
-        var response = httpClient.send(deleteAccountRequest, HttpResponse.BodyHandlers.ofString());
-        logger.info("DELETE Leaderboard Response [{}]", response.statusCode());
     }
 
     private static HttpRequest.BodyPublisher createAccountRequestBody(String userId) {
         return HttpRequest.BodyPublishers.ofString(String.format("{\"accountId\":\"%s\"}", userId));
     }
 
-    private static HttpRequest.BodyPublisher createLeaderboardRequestBody(String userId) {
-        return HttpRequest.BodyPublishers.ofString(String.format("{\"accountId\":\"%s\"}", userId));
+    private static String getAccessToken() {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        String requestBody = String.format(
+                "client_id=%s" +
+                "&grant_type=%s" +
+                "&client_secret=%s",
+                CLIENT_ID, GRANT_TYPE, CLIENT_SECRET);
+
+        try {
+            HttpRequest getTokenRequest = HttpRequest.newBuilder()
+                    .uri(new URI(TOKEN_REST_ENDPOINT))
+                    .header(CONTENT_TYPE, APPLICATION_FORM_URLENCODED)
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .build();
+
+            var response = HTTP_CLIENT.send(getTokenRequest, HttpResponse.BodyHandlers.ofString());
+            Token token =  objectMapper.readValue(response.body(), Token.class);
+
+            return token.getAccessToken();
+
+        } catch (URISyntaxException | IOException | InterruptedException e) {
+            logger.error("Error handling admin token request", e);
+        }
+        throw new RuntimeException("Unable to get token");
     }
 }
