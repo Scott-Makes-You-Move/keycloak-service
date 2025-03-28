@@ -7,7 +7,7 @@ COPY keycloak-extensions/ keycloak-extensions/
 RUN mvn clean package -f keycloak-extensions/pom.xml
 
 # Stage 2: Build Keycloak with the extension
-FROM quay.io/keycloak/keycloak:26.1 AS keycloak-builder
+FROM quay.io/keycloak/keycloak:23.0.7 AS keycloak-builder
 
 ENV KC_HEALTH_ENABLED=true
 ENV KC_METRICS_ENABLED=true
@@ -22,23 +22,26 @@ COPY --from=extensions-builder /build/keycloak-extensions/target/keycloak-extens
 COPY ./bootstrap/realm-export.json /opt/keycloak/data/import/realm-export.json
 
 # Stage 3: Final Keycloak runtime image
-FROM quay.io/keycloak/keycloak:26.1
+FROM quay.io/keycloak/keycloak:23.0.7
 COPY --from=keycloak-builder /opt/keycloak/ /opt/keycloak/
 
 ARG KC_DB
 ARG KC_DB_URL
 ARG KC_DB_USERNAME
 ARG KC_DB_PASSWORD
-ARG KC_BOOTSTRAP_ADMIN_USERNAME
-ARG KC_BOOTSTRAP_ADMIN_PASSWORD
+ARG KEYCLOAK_ADMIN
+ARG KEYCLOAK_ADMIN_PASSWORD
+ARG KC_FEATURES
+
 
 ## Database
 ENV KC_DB=${KC_DB}
 ENV KC_DB_URL=${KC_DB_URL}
 ENV KC_DB_USERNAME=$$KC_DB_USERNAME}
 ENV KC_DB_PASSWORD=$$KC_DB_PASSWORD}
-ENV KC_BOOTSTRAP_ADMIN_USERNAME=${KC_BOOTSTRAP_ADMIN_USERNAME}
-ENV KC_BOOTSTRAP_ADMIN_PASSWORD=${KC_BOOTSTRAP_ADMIN_PASSWORD}
+ENV KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
+ENV KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+ENV KC_FEATURES=${KC_FEATURES}
 
 EXPOSE 8080
 
