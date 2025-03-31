@@ -32,7 +32,7 @@ public class UserEventListenerProvider implements EventListenerProvider {
             ? System.getenv("ACCOUNT_REST_ENDPOINT")
             : "http://host.docker.internal:9000/api/v1/account";
     public static final String TOKEN_REST_ENDPOINT = Objects.nonNull(System.getenv("TOKEN_REST_ENDPOINT"))
-            ? System.getenv("ACCOUNT_REST_ENDPOINT")
+            ? System.getenv("TOKEN_REST_ENDPOINT")
             : "http://localhost:8080/realms/smym-dev/protocol/openid-connect/token";
     public static final String CLIENT_ID = Objects.nonNull(System.getenv("CLIENT_ID"))
             ? System.getenv("CLIENT_ID")
@@ -125,10 +125,6 @@ public class UserEventListenerProvider implements EventListenerProvider {
                 "&grant_type=%s" +
                 "&client_secret=%s",
                 CLIENT_ID, GRANT_TYPE, CLIENT_SECRET);
-
-        logger.info("Sending request to '{}' with request body '{}'",
-                TOKEN_REST_ENDPOINT, requestBody
-        );
 
         try {
             HttpRequest getTokenRequest = HttpRequest.newBuilder()
