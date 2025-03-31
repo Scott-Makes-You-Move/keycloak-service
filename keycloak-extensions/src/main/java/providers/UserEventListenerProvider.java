@@ -126,6 +126,10 @@ public class UserEventListenerProvider implements EventListenerProvider {
                 "&client_secret=%s",
                 CLIENT_ID, GRANT_TYPE, CLIENT_SECRET);
 
+        logger.info("Sending request to '{}' with request body '{}'",
+                TOKEN_REST_ENDPOINT, requestBody
+        );
+
         try {
             HttpRequest getTokenRequest = HttpRequest.newBuilder()
                     .uri(new URI(TOKEN_REST_ENDPOINT))
