@@ -180,6 +180,19 @@
       "webOrigins": [
         "*"
       ]
+    },
+    {
+      "clientId": "smym-frontend-client",
+      "enabled": true,
+      "secret": "smym-frontend-client-secret",
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "redirectUris": [
+        "*"
+      ],
+      "webOrigins": [
+        "*"
+      ]
     }
   ]
 }
