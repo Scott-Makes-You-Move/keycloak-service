@@ -33,7 +33,7 @@ public class UserEventListenerProvider implements EventListenerProvider {
             : "http://host.docker.internal:9000/api/v1/account";
     public static final String TOKEN_REST_ENDPOINT = Objects.nonNull(System.getenv("TOKEN_REST_ENDPOINT"))
             ? System.getenv("ACCOUNT_REST_ENDPOINT")
-            : "http://localhost:8080/realms/myrealm/protocol/openid-connect/token";
+            : "http://localhost:8080/realms/smym-dev/protocol/openid-connect/token";
     public static final String CLIENT_ID = Objects.nonNull(System.getenv("CLIENT_ID"))
             ? System.getenv("CLIENT_ID")
             : "event-listener-client";
