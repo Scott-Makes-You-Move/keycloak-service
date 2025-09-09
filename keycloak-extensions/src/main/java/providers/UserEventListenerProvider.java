@@ -68,6 +68,18 @@ public class UserEventListenerProvider implements EventListenerProvider {
             logger.info("Admin event with resource type 'USER' found.");
             String resourcePath = adminEvent.getResourcePath();
 
+            logger.info("Error: [{}]", adminEvent.getError());
+            logger.info("Representation: [{}]", adminEvent.getRepresentation());
+            logger.info("Resource type: [{}]", adminEvent.getResourceTypeAsString());
+
+            logger.info("Printing details");
+            adminEvent.getDetails().forEach((k, v) -> logger.info("{}: {}", k, v));
+            logger.info("Printing details finished");
+
+            logger.info("Resource path: [{}]", resourcePath);
+            logger.info("Operation type: [{}]", operationType);
+
+
             if (resourcePath.startsWith(USERS_RESOURCE_PATH)) {
                 String userId = resourcePath.substring(USERS_RESOURCE_PATH.length());
                 handleAccountEvent(operationType, userId, adminEvent.getRepresentation());
