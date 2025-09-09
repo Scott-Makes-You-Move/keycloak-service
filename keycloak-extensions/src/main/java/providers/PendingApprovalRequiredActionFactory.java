@@ -5,7 +5,6 @@ import org.keycloak.authentication.RequiredActionFactory;
 import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
-import java.util.List;
 
 public class PendingApprovalRequiredActionFactory implements RequiredActionFactory {
 
