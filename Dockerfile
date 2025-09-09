@@ -19,7 +19,6 @@ RUN /opt/keycloak/bin/kc.sh build
 
 # Copy Keycloak extensions from the first build stage
 COPY --from=extensions-builder /build/keycloak-extensions/target/keycloak-extensions-1.0-SNAPSHOT.jar /opt/keycloak/providers/
-COPY ./bootstrap/realm-export.json /opt/keycloak/data/import/realm-export.json
 
 # Stage 3: Final Keycloak runtime image
 FROM quay.io/keycloak/keycloak:23.0.7
