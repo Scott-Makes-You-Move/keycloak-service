@@ -12,6 +12,7 @@ import org.keycloak.models.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 
@@ -39,6 +40,9 @@ public class RegistrationListenerProvider implements EventListenerProvider {
 
         logger.info("User registered: '{}'. For now disable until admin approval.", newUser.getUsername());
         newUser.setEnabled(false);
+        newUser.addRequiredAction("pending-approval-action");
+        newUser.setSingleAttribute("registrationDate", Instant.now().toString());
+        logger.info("Required action 'pending-approval-action' added to user: {}", newUser.getUsername());
 
         sendEmailToApprover(newUser, realm);
     }
