@@ -1,6 +1,8 @@
 package providers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.keycloak.authentication.forms.RegistrationUserCreation;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
@@ -28,6 +30,7 @@ import static org.keycloak.utils.MediaType.APPLICATION_FORM_URLENCODED;
 public class UserEventListenerProvider implements EventListenerProvider {
     private static final Logger logger = LoggerFactory.getLogger(UserEventListenerProvider.class);
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     private final KeycloakSession session;
 
@@ -67,24 +70,25 @@ public class UserEventListenerProvider implements EventListenerProvider {
 
             if (resourcePath.startsWith(USERS_RESOURCE_PATH)) {
                 String userId = resourcePath.substring(USERS_RESOURCE_PATH.length());
-                handleAccountEvent(operationType, userId);
+                handleAccountEvent(operationType, userId, adminEvent.getRepresentation());
             }
         }
     }
 
-    private void handleAccountEvent(OperationType operationType, String userId) {
+    private void handleAccountEvent(OperationType operationType, String userId, String userRepresentation) {
+        logger.info("Handling account event. Operation type: [{}], user id: [{}], user representation: [{}]", operationType, userId, userRepresentation);
         UserModel user = session.users().getUserById(session.getContext().getRealm(), userId);
 
         try {
             switch (operationType) {
                 case CREATE:
-                    executeCreateAccountRequest(userId);
+                    user.setEnabled(false);
                     break;
 
                 case UPDATE:
                     logger.info("User enabled: [{}], user email verified: [{}]", user.isEnabled(), user.isEmailVerified());
                     if (user.isEnabled()) {
-                        logger.info("Within if statement");
+                        executeCreateAccountRequest(userId);
                     }
                     break;
 
