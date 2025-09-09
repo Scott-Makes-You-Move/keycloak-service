@@ -63,21 +63,24 @@ public class UserEventListenerProvider implements EventListenerProvider {
 
         if (resourceType.equals(ResourceType.USER)) {
             logger.info("Admin event with resource type 'USER' found.");
+            logger.info("Test info");
+            logger.debug("Test debug");
             String resourcePath = adminEvent.getResourcePath();
 
             if (resourcePath.startsWith(USERS_RESOURCE_PATH)) {
                 String userId = resourcePath.substring(USERS_RESOURCE_PATH.length());
+                logger.info("Handling account event with operationType [{}] and user id [{}]", operationType, userId);
                 handleAccountEvent(operationType, userId);
             }
         }
     }
 
-    private void handleAccountEvent(OperationType type, String userId) {
+    private void handleAccountEvent(OperationType operationType, String userId) {
         UserModel user = session.users().getUserById(session.getContext().getRealm(), userId);
 
-        logger.info("Handling account event with operation type [{}] and user id [{}]", type, userId);
+        logger.info("Handling account event with operationType [{}] and user id [{}]", operationType, userId);
         try {
-            switch (type) {
+            switch (operationType) {
                 case CREATE:
                     executeCreateAccountRequest(userId);
                     break;
@@ -93,7 +96,7 @@ public class UserEventListenerProvider implements EventListenerProvider {
                     break;
 
                 default:
-                    logger.warn("Unknown operation type [{}]", type);
+                    logger.warn("Unknown operation operationType [{}]", operationType);
             }
         } catch (URISyntaxException | IOException | InterruptedException e) {
             logger.error("Error handling account event", e);
