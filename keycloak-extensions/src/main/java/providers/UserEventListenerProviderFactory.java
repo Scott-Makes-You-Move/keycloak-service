@@ -9,7 +9,7 @@ import org.keycloak.models.KeycloakSessionFactory;
 public class UserEventListenerProviderFactory implements EventListenerProviderFactory {
     @Override
     public EventListenerProvider create(KeycloakSession keycloakSession) {
-        return new UserEventListenerProvider();
+        return new UserEventListenerProvider(keycloakSession);
     }
 
     @Override

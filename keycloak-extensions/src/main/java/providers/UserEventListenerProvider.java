@@ -6,6 +6,8 @@ import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import model.Token;
@@ -27,6 +29,8 @@ public class UserEventListenerProvider implements EventListenerProvider {
     private static final Logger logger = LoggerFactory.getLogger(UserEventListenerProvider.class);
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
 
+    private final KeycloakSession session;
+
     public static final String USERS_RESOURCE_PATH = "users/";
     public static final String ACCOUNT_REST_ENDPOINT = Objects.nonNull(System.getenv("ACCOUNT_REST_ENDPOINT"))
             ? System.getenv("ACCOUNT_REST_ENDPOINT")
@@ -43,6 +47,10 @@ public class UserEventListenerProvider implements EventListenerProvider {
     public static final String CLIENT_SECRET = Objects.nonNull(System.getenv("CLIENT_SECRET"))
             ? System.getenv("CLIENT_SECRET")
             : "event-listener-secret";
+
+    public UserEventListenerProvider(KeycloakSession session) {
+        this.session = session;
+    }
 
     @Override
     public void onEvent(Event event) {
@@ -64,12 +72,19 @@ public class UserEventListenerProvider implements EventListenerProvider {
         }
     }
 
-    private static void handleAccountEvent(OperationType type, String userId) {
+    private void handleAccountEvent(OperationType type, String userId) {
+        UserModel user = session.users().getUserById(session.getContext().getRealm(), userId);
+
         try {
             switch (type) {
                 case CREATE:
                     executeCreateAccountRequest(userId);
                     break;
+
+                case UPDATE:
+                    if (user.isEnabled()) {
+                        logger.debug("User enabled: [{}], user email verified: [{}]", user.isEnabled(), user.isEmailVerified());
+                    }
 
                 case DELETE:
                     executeDeleteAccountRequest(userId);
@@ -88,7 +103,7 @@ public class UserEventListenerProvider implements EventListenerProvider {
 
     }
 
-    private static void executeCreateAccountRequest(String userId) throws URISyntaxException, IOException, InterruptedException {
+    private void executeCreateAccountRequest(String userId) throws URISyntaxException, IOException, InterruptedException {
         logger.info("CREATE operation type found. Executing POST Account REST API at [{}]", ACCOUNT_REST_ENDPOINT);
         String accessToken = getAccessToken();
         HttpRequest createAccountRequest = HttpRequest.newBuilder(new URI(ACCOUNT_REST_ENDPOINT))
@@ -101,7 +116,7 @@ public class UserEventListenerProvider implements EventListenerProvider {
         logger.info("POST Account Response [{}]", response.statusCode());
     }
 
-    private static void executeDeleteAccountRequest(String userId) throws URISyntaxException, IOException, InterruptedException {
+    private void executeDeleteAccountRequest(String userId) throws URISyntaxException, IOException, InterruptedException {
         logger.info("DELETE operation type found. Executing DELETE Account REST API at [{}]", ACCOUNT_REST_ENDPOINT);
         String accessToken = getAccessToken();
         HttpRequest deleteAccountRequest = HttpRequest.newBuilder(new URI(ACCOUNT_REST_ENDPOINT + "/" + userId))
@@ -113,11 +128,11 @@ public class UserEventListenerProvider implements EventListenerProvider {
         logger.info("DELETE Account Response [{}]", response.statusCode());
     }
 
-    private static HttpRequest.BodyPublisher createAccountRequestBody(String userId) {
+    private HttpRequest.BodyPublisher createAccountRequestBody(String userId) {
         return HttpRequest.BodyPublishers.ofString(String.format("{\"accountId\":\"%s\"}", userId));
     }
 
-    private static String getAccessToken() {
+    private String getAccessToken() {
         ObjectMapper objectMapper = new ObjectMapper();
 
         String requestBody = String.format(
