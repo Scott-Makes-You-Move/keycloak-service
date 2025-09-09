@@ -63,13 +63,10 @@ public class UserEventListenerProvider implements EventListenerProvider {
 
         if (resourceType.equals(ResourceType.USER)) {
             logger.info("Admin event with resource type 'USER' found.");
-            logger.info("Test info");
-            logger.debug("Test debug");
             String resourcePath = adminEvent.getResourcePath();
 
             if (resourcePath.startsWith(USERS_RESOURCE_PATH)) {
                 String userId = resourcePath.substring(USERS_RESOURCE_PATH.length());
-                logger.info("Handling account event with operationType [{}] and user id [{}]", operationType, userId);
                 handleAccountEvent(operationType, userId);
             }
         }
@@ -78,7 +75,6 @@ public class UserEventListenerProvider implements EventListenerProvider {
     private void handleAccountEvent(OperationType operationType, String userId) {
         UserModel user = session.users().getUserById(session.getContext().getRealm(), userId);
 
-        logger.info("Handling account event with operationType [{}] and user id [{}]", operationType, userId);
         try {
             switch (operationType) {
                 case CREATE:
@@ -86,8 +82,9 @@ public class UserEventListenerProvider implements EventListenerProvider {
                     break;
 
                 case UPDATE:
+                    logger.info("User enabled: [{}], user email verified: [{}]", user.isEnabled(), user.isEmailVerified());
                     if (user.isEnabled()) {
-                        logger.debug("User enabled: [{}], user email verified: [{}]", user.isEnabled(), user.isEmailVerified());
+                        logger.info("Within if statement");
                     }
                     break;
 
