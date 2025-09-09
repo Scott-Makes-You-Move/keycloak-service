@@ -75,6 +75,7 @@ public class UserEventListenerProvider implements EventListenerProvider {
     private void handleAccountEvent(OperationType type, String userId) {
         UserModel user = session.users().getUserById(session.getContext().getRealm(), userId);
 
+        logger.info("Handling account event with operation type [{}] and user id [{}]", type, userId);
         try {
             switch (type) {
                 case CREATE:
@@ -85,6 +86,7 @@ public class UserEventListenerProvider implements EventListenerProvider {
                     if (user.isEnabled()) {
                         logger.debug("User enabled: [{}], user email verified: [{}]", user.isEnabled(), user.isEmailVerified());
                     }
+                    break;
 
                 case DELETE:
                     executeDeleteAccountRequest(userId);
