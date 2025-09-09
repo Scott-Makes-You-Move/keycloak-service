@@ -20,6 +20,7 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
 import java.util.Objects;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -72,9 +73,16 @@ public class UserEventListenerProvider implements EventListenerProvider {
             logger.info("Representation: [{}]", adminEvent.getRepresentation());
             logger.info("Resource type: [{}]", adminEvent.getResourceTypeAsString());
 
-            logger.info("Printing details");
-            adminEvent.getDetails().forEach((k, v) -> logger.info("{}: {}", k, v));
-            logger.info("Printing details finished");
+            Map<String, String> details = adminEvent.getDetails();
+            boolean detailsNull = details == null;
+            boolean detailsEmpty = details.isEmpty();
+            if (!detailsNull && !detailsEmpty) {
+                logger.info("Printing details");
+                adminEvent.getDetails().forEach((k, v) -> logger.info("{}: {}", k, v));
+                logger.info("Printing details finished");
+            } else {
+                logger.info("No details found. Null [{}], Empty [{}]", detailsNull, detailsEmpty);
+            }
 
             logger.info("Resource path: [{}]", resourcePath);
             logger.info("Operation type: [{}]", operationType);
