@@ -1,8 +1,7 @@
 package providers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.keycloak.authentication.forms.RegistrationUserCreation;
+import model.Token;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
@@ -12,7 +11,6 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import model.Token;
 
 import java.io.IOException;
 import java.net.URI;
@@ -20,18 +18,18 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Map;
 import java.util.Objects;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.MediaType.WILDCARD;
-import static org.apache.http.HttpHeaders.*;
+import static org.apache.http.HttpHeaders.ACCEPT;
+import static org.apache.http.HttpHeaders.AUTHORIZATION;
+import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static org.keycloak.utils.MediaType.APPLICATION_FORM_URLENCODED;
 
 public class UserEventListenerProvider implements EventListenerProvider {
     private static final Logger logger = LoggerFactory.getLogger(UserEventListenerProvider.class);
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
-    private static final ObjectMapper mapper = new ObjectMapper();
 
     private final KeycloakSession session;
 
@@ -68,25 +66,6 @@ public class UserEventListenerProvider implements EventListenerProvider {
         if (resourceType.equals(ResourceType.USER)) {
             logger.info("Admin event with resource type 'USER' found.");
             String resourcePath = adminEvent.getResourcePath();
-
-            logger.info("Error: [{}]", adminEvent.getError());
-            logger.info("Representation: [{}]", adminEvent.getRepresentation());
-            logger.info("Resource type: [{}]", adminEvent.getResourceTypeAsString());
-
-            Map<String, String> details = adminEvent.getDetails();
-            boolean detailsNull = details == null;
-            boolean detailsEmpty = details.isEmpty();
-            if (!detailsNull && !detailsEmpty) {
-                logger.info("Printing details");
-                adminEvent.getDetails().forEach((k, v) -> logger.info("{}: {}", k, v));
-                logger.info("Printing details finished");
-            } else {
-                logger.info("No details found. Null [{}], Empty [{}]", detailsNull, detailsEmpty);
-            }
-
-            logger.info("Resource path: [{}]", resourcePath);
-            logger.info("Operation type: [{}]", operationType);
-
 
             if (resourcePath.startsWith(USERS_RESOURCE_PATH)) {
                 String userId = resourcePath.substring(USERS_RESOURCE_PATH.length());
@@ -163,8 +142,8 @@ public class UserEventListenerProvider implements EventListenerProvider {
 
         String requestBody = String.format(
                 "client_id=%s" +
-                "&grant_type=%s" +
-                "&client_secret=%s",
+                        "&grant_type=%s" +
+                        "&client_secret=%s",
                 CLIENT_ID, GRANT_TYPE, CLIENT_SECRET);
 
         try {
@@ -175,7 +154,7 @@ public class UserEventListenerProvider implements EventListenerProvider {
                     .build();
 
             var response = HTTP_CLIENT.send(getTokenRequest, HttpResponse.BodyHandlers.ofString());
-            Token token =  objectMapper.readValue(response.body(), Token.class);
+            Token token = objectMapper.readValue(response.body(), Token.class);
 
             return token.getAccessToken();
 
