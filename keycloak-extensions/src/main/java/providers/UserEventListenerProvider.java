@@ -1,6 +1,7 @@
 package providers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.keycloak.authentication.forms.RegistrationUserCreation;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
@@ -78,13 +79,13 @@ public class UserEventListenerProvider implements EventListenerProvider {
         try {
             switch (operationType) {
                 case CREATE:
-                    executeCreateAccountRequest(userId);
+                    user.setEnabled(false);
                     break;
 
                 case UPDATE:
                     logger.info("User enabled: [{}], user email verified: [{}]", user.isEnabled(), user.isEmailVerified());
                     if (user.isEnabled()) {
-                        logger.info("Within if statement");
+                        executeCreateAccountRequest(userId);
                     }
                     break;
 
