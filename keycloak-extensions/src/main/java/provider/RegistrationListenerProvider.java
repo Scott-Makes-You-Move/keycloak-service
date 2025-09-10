@@ -38,7 +38,7 @@ public class RegistrationListenerProvider implements EventListenerProvider {
         UserModel newUser = session.users().getUserById(realm, userId);
         if (newUser == null) return;
 
-        logger.info("User registered: '{}'. For now disable until admin approval.", newUser.getUsername());
+        logger.info("User registered: '{}'. User disabled until admin approval.", newUser.getUsername());
         newUser.setEnabled(false);
         newUser.addRequiredAction("pending-approval-action");
         newUser.setSingleAttribute("registrationDate", Instant.now().toString());

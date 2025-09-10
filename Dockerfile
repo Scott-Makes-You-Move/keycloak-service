@@ -16,16 +16,14 @@ ENV KC_DB=postgres
 
 WORKDIR /opt/keycloak
 
-# Copy themes FIRST so they're included in the build
 COPY --from=extensions-builder /build/themes/ /opt/keycloak/themes/
 RUN /opt/keycloak/bin/kc.sh build
 
-# Copy Keycloak extensions
 COPY --from=extensions-builder /build/keycloak-extensions/target/keycloak-extensions-1.0-SNAPSHOT.jar /opt/keycloak/providers/
 
 # Stage 3: Final Keycloak runtime image
 FROM quay.io/keycloak/keycloak:23.0.7
-# Copy everything from the builder stage (including themes)
+
 COPY --from=keycloak-builder /opt/keycloak/ /opt/keycloak/
 
 ARG KC_DB
@@ -35,8 +33,10 @@ ARG KC_DB_PASSWORD
 ARG KEYCLOAK_ADMIN
 ARG KEYCLOAK_ADMIN_PASSWORD
 ARG KC_FEATURES
+ARG KC_HOSTNAME_STRICT
+ARG KC_HOSTNAME_STRICT_HTTPS
+ARG KC_HTTP_ENABLED
 
-## Database
 ENV KC_DB=${KC_DB}
 ENV KC_DB_URL=${KC_DB_URL}
 ENV KC_DB_USERNAME=${KC_DB_USERNAME}
@@ -44,7 +44,10 @@ ENV KC_DB_PASSWORD=${KC_DB_PASSWORD}
 ENV KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
 ENV KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
 ENV KC_FEATURES=${KC_FEATURES}
+ENV KC_HOSTNAME_STRICT=${KC_HOSTNAME_STRICT}
+ENV KC_HOSTNAME_STRICT_HTTPS=${KC_HOSTNAME_STRICT_HTTPS}
+ENV KC_HTTP_ENABLED=${KC_HTTP_ENABLED}
 
-EXPOSE 8080
+EXPOSE 8080 5005
 
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start-dev", "--import-realm"]
