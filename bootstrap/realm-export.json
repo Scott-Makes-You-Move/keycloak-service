@@ -1,0 +1,48 @@
+{
+  "id": "smym-dev",
+  "realm": "smym-dev",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": true,
+  "clients": [
+    {
+      "clientId": "smym-client",
+      "enabled": true,
+      "secret": "smym-client-secret",
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "redirectUris": [
+        "*"
+      ],
+      "webOrigins": [
+        "*"
+      ]
+    },
+    {
+      "clientId": "event-listener-client",
+      "enabled": true,
+      "secret": "event-listener-secret",
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "redirectUris": [
+        "*"
+      ],
+      "webOrigins": [
+        "*"
+      ]
+    },
+    {
+      "clientId": "smym-frontend-client",
+      "enabled": true,
+      "secret": "smym-frontend-client-secret",
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "redirectUris": [
+        "*"
+      ],
+      "webOrigins": [
+        "*"
+      ]
+    }
+  ]
+}

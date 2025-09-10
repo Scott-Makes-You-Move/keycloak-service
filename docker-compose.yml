@@ -6,8 +6,13 @@ services:
     container_name: keycloak
     ports:
       - "8080:8080"
+      - "5005:5005"
     env_file:
       - .env
+    volumes:
+      - ./bootstrap/realm-export.json:/opt/keycloak/data/import/realm-export.json
+    environment:
+      - JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5005
     depends_on:
       postgres:
         condition: service_healthy
