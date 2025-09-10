@@ -1,4 +1,4 @@
-package providers;
+package action;
 
 import org.keycloak.Config;
 import org.keycloak.authentication.RequiredActionFactory;
@@ -27,14 +27,17 @@ public class PendingApprovalRequiredActionFactory implements RequiredActionFacto
 
     @Override
     public void init(Config.Scope config) {
+        // Nothing to do here.
     }
 
     @Override
     public void postInit(KeycloakSessionFactory factory) {
+        // Nothing to do here.
     }
 
     @Override
     public void close() {
+        // Nothing to do here.
     }
 
     @Override

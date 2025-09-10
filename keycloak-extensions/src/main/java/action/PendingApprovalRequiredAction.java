@@ -1,4 +1,4 @@
-package providers;
+package action;
 
 import jakarta.ws.rs.core.Response;
 import org.keycloak.authentication.RequiredActionContext;
@@ -33,5 +33,6 @@ public class PendingApprovalRequiredAction implements RequiredActionProvider {
 
     @Override
     public void close() {
+        // Nothing to do here.
     }
 }
