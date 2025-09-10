@@ -21,7 +21,7 @@ COPY --from=extensions-builder /build/themes/ /opt/keycloak/themes/
 RUN /opt/keycloak/bin/kc.sh build
 
 # Copy Keycloak extensions
-COPY --from=extensions-builder /build/keycloak-extensions/target/keycloak-extensions-1.0-SNAPSHOT.jar /opt/keycloak/provider/
+COPY --from=extensions-builder /build/keycloak-extensions/target/keycloak-extensions-1.0-SNAPSHOT.jar /opt/keycloak/providers/
 
 # Stage 3: Final Keycloak runtime image
 FROM quay.io/keycloak/keycloak:23.0.7
