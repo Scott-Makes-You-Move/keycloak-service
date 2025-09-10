@@ -1,4 +1,4 @@
-package providers;
+package provider;
 
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailSenderProvider;
@@ -32,7 +32,7 @@ public class RegistrationListenerProvider implements EventListenerProvider {
     public void onEvent(Event event) {
         if (event.getType() != EventType.REGISTER) return;
 
-        logger.info("Registration event received: '{}'", event.getType().toString());
+        logger.info("Registration event received: '{}'", event.getType());
         RealmModel realm = session.getContext().getRealm();
         String userId = event.getUserId();
         UserModel newUser = session.users().getUserById(realm, userId);
@@ -49,7 +49,7 @@ public class RegistrationListenerProvider implements EventListenerProvider {
 
     @Override
     public void onEvent(AdminEvent event, boolean includeRepresentation) {
-
+        // Nothing to do here.
     }
 
     private void sendEmailToApprover(UserModel newUser, RealmModel realm) {
@@ -76,5 +76,6 @@ public class RegistrationListenerProvider implements EventListenerProvider {
 
     @Override
     public void close() {
+        // Nothing to do here.
     }
 }

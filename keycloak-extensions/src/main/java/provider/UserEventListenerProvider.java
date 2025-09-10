@@ -1,4 +1,4 @@
-package providers;
+package provider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.Token;
@@ -56,6 +56,7 @@ public class UserEventListenerProvider implements EventListenerProvider {
 
     @Override
     public void onEvent(Event event) {
+        // Nothing to do here.
     }
 
     @Override
@@ -105,7 +106,7 @@ public class UserEventListenerProvider implements EventListenerProvider {
 
     @Override
     public void close() {
-
+        // Nothing to do here.
     }
 
     private void executeCreateAccountRequest(String userId) throws URISyntaxException, IOException, InterruptedException {
@@ -137,14 +138,10 @@ public class UserEventListenerProvider implements EventListenerProvider {
         return HttpRequest.BodyPublishers.ofString(String.format("{\"accountId\":\"%s\"}", userId));
     }
 
-    private String getAccessToken() {
+    private String getAccessToken() throws InterruptedException {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        String requestBody = String.format(
-                "client_id=%s" +
-                        "&grant_type=%s" +
-                        "&client_secret=%s",
-                CLIENT_ID, GRANT_TYPE, CLIENT_SECRET);
+        String requestBody = "client_id=%s&grant_type=%s&client_secret=%s".formatted(CLIENT_ID, GRANT_TYPE, CLIENT_SECRET);
 
         try {
             HttpRequest getTokenRequest = HttpRequest.newBuilder()
@@ -156,11 +153,15 @@ public class UserEventListenerProvider implements EventListenerProvider {
             var response = HTTP_CLIENT.send(getTokenRequest, HttpResponse.BodyHandlers.ofString());
             Token token = objectMapper.readValue(response.body(), Token.class);
 
-            return token.getAccessToken();
+            return token.accessToken();
 
         } catch (URISyntaxException | IOException | InterruptedException e) {
             logger.error("Error handling admin token request", e);
+            if (e instanceof InterruptedException interruptedException) {
+                throw new InterruptedException("InterruptedException thrown: " +
+                        interruptedException.getMessage());
+            }
+            throw new RuntimeException("Unable to get token: " + e.getMessage());
         }
-        throw new RuntimeException("Unable to get token");
     }
 }

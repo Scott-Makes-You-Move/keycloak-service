@@ -1,2 +1,2 @@
-providers.UserEventListenerProviderFactory
-providers.RegistrationListenerProviderFactory
+provider.UserEventListenerProviderFactory
+provider.RegistrationListenerProviderFactory
