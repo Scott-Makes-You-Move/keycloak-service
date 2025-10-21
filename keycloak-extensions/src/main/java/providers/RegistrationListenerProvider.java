@@ -1,4 +1,4 @@
-package provider;
+package providers;
 
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailSenderProvider;
