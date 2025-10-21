@@ -1,5 +1,5 @@
 # Stage 1: Build Keycloak extensions JAR and prepare themes
-FROM maven:3.8.6-eclipse-temurin-17 AS extensions-builder
+FROM maven:3.9.9-eclipse-temurin-21 AS extensions-builder
 WORKDIR /build
 
 COPY keycloak-extensions/ keycloak-extensions/
