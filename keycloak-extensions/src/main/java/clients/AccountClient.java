@@ -27,15 +27,17 @@ public class AccountClient {
     private final KeycloakClient keycloakClient = new KeycloakClient();
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
 
-    public void executeCreateAccountRequest(String userId, String ipAddress) throws URISyntaxException, IOException, InterruptedException {
+    public void executeCreateAccountRequest(String userId, String timezone) throws URISyntaxException, IOException, InterruptedException {
         logger.info("CREATE operation type found. Executing POST Account REST API at [{}]", ACCOUNT_REST_ENDPOINT);
         String accessToken = keycloakClient.getAccessToken();
+        HttpRequest.BodyPublisher requestBody = createAccountRequestBody(userId, timezone);
         HttpRequest createAccountRequest = HttpRequest.newBuilder(new URI(ACCOUNT_REST_ENDPOINT))
                 .header(CONTENT_TYPE, APPLICATION_JSON)
                 .headers(AUTHORIZATION, String.format("Bearer %s", accessToken))
-                .POST(createAccountRequestBody(userId, ipAddress))
+                .POST(requestBody)
                 .build();
 
+        logger.info("Calling POST Account with request body '{}'", requestBody.toString());
         var response = HTTP_CLIENT.send(createAccountRequest, HttpResponse.BodyHandlers.ofString());
         logger.info("POST Account Response [{}]", response.statusCode());
     }
@@ -53,7 +55,7 @@ public class AccountClient {
     }
 
     private HttpRequest.BodyPublisher createAccountRequestBody(String userId, String ipAddress) {
-        String requestBody = "{\"accountId\": \"%s\", \"ip\": \"%s\"}".formatted(userId, ipAddress);
+        String requestBody = "{\"accountId\": \"%s\", \"timezone\": \"%s\"}".formatted(userId, ipAddress);
         return HttpRequest.BodyPublishers.ofString(requestBody);
     }
 }
