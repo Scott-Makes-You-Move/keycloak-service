@@ -1,4 +1,4 @@
-package action;
+package actions;
 
 import jakarta.ws.rs.core.Response;
 import org.keycloak.authentication.RequiredActionContext;

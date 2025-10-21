@@ -1,4 +1,4 @@
-package provider;
+package providers;
 
 import org.keycloak.Config;
 import org.keycloak.events.EventListenerProvider;
