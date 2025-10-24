@@ -42,4 +42,4 @@ ENV KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
 
 EXPOSE 8080 5005
 
-ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--import-realm"]
+ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--optimized"]
