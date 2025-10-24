@@ -53,8 +53,7 @@ public class UserEventListenerProvider implements EventListenerProvider {
     private void handleAccountEvent(OperationType operationType, String userId, String ipAddress) {
         logger.info("Handling account event. Operation type: [{}], user id: [{}]", operationType, userId);
         UserModel user = session.users().getUserById(session.getContext().getRealm(), userId);
-//        String timezone = geoClient.getTimezone(ipAddress);
-        String timezone = "Australia/Melbourne";
+        String timezone = geoClient.getTimezone(ipAddress);
 
         try {
             switch (operationType) {
