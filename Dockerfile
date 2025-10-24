@@ -16,10 +16,10 @@ ENV KC_DB=postgres
 
 WORKDIR /opt/keycloak
 
-COPY --from=extensions-builder /build/themes/ /opt/keycloak/themes/
-RUN /opt/keycloak/bin/kc.sh build
-
 COPY --from=extensions-builder /build/keycloak-extensions/target/keycloak-extensions-1.0-SNAPSHOT.jar /opt/keycloak/providers/
+COPY --from=extensions-builder /build/themes/ /opt/keycloak/themes/
+
+RUN /opt/keycloak/bin/kc.sh build
 
 # Stage 3: Final Keycloak runtime image
 FROM quay.io/keycloak/keycloak:26.0.2
