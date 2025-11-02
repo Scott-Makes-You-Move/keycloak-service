@@ -1,7 +1,8 @@
 package providers;
 
-import clients.AccountClient;
-import clients.GeoClient;
+import clients.AccountHttpClient;
+import clients.GeoHttpClient;
+import exceptions.HttpClientException;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
@@ -12,8 +13,7 @@ import org.keycloak.models.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
+import java.util.concurrent.Executors;
 
 public class UserEventListenerProvider implements EventListenerProvider {
     private static final Logger logger = LoggerFactory.getLogger(UserEventListenerProvider.class);
@@ -21,8 +21,8 @@ public class UserEventListenerProvider implements EventListenerProvider {
     public static final String USERS_RESOURCE_PATH = "users/";
 
     private final KeycloakSession session;
-    private final AccountClient accountClient = new AccountClient();
-    private final GeoClient geoClient = new GeoClient();
+    private final AccountHttpClient accountClient = new AccountHttpClient();
+    private final GeoHttpClient geoClient = new GeoHttpClient();
 
     public UserEventListenerProvider(KeycloakSession session) {
         this.session = session;
@@ -50,38 +50,37 @@ public class UserEventListenerProvider implements EventListenerProvider {
         }
     }
 
+    @Override
+    public void close() {
+        // Nothing to do here.
+    }
+
     private void handleAccountEvent(OperationType operationType, String userId, String ipAddress) {
         logger.info("Handling account event. Operation type: [{}], user id: [{}]", operationType, userId);
         UserModel user = session.users().getUserById(session.getContext().getRealm(), userId);
         String timezone = geoClient.getTimezone(ipAddress);
 
-        try {
-            switch (operationType) {
-                case CREATE:
-                    user.setEnabled(false);
-                    break;
-
-                case UPDATE:
-                    logger.info("User enabled: [{}], user email verified: [{}]", user.isEnabled(), user.isEmailVerified());
-                    if (user.isEnabled()) {
-                        accountClient.executeCreateAccountRequest(userId, timezone);
-                    }
-                    break;
-
-                case DELETE:
-                    accountClient.executeDeleteAccountRequest(userId);
-                    break;
-
-                default:
-                    logger.warn("Unknown operation operationType [{}]", operationType);
-            }
-        } catch (URISyntaxException | IOException | InterruptedException e) {
-            logger.error("Error handling account event", e);
+        switch (operationType) {
+            case CREATE -> user.setEnabled(false);
+            case UPDATE -> updateUser(user, timezone);
+            case DELETE -> accountClient.executeDeleteAccountRequest(userId);
+            default -> logger.warn("Unknown operation operationType [{}]", operationType);
         }
     }
 
-    @Override
-    public void close() {
-        // Nothing to do here.
+    private void updateUser(UserModel userModel, String timezone) {
+        if (userModel.isEnabled()) {
+            runInVirtualThread(() -> {
+                try {
+                    accountClient.executeCreateAccountRequest(userModel.getId(), timezone);
+                } catch (Exception e) {
+                    throw new HttpClientException("Exception while running task in virtual thread", e);
+                }
+            });
+        }
+    }
+
+    private void runInVirtualThread(Runnable task) {
+        Thread.startVirtualThread(task);
     }
 }
