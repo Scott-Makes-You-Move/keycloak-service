@@ -13,13 +13,18 @@ import java.net.http.HttpResponse;
 
 public class AbstractHttpClient {
     private static final Logger logger = LoggerFactory.getLogger(AbstractHttpClient.class);
-
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-
     public HttpResponse<String> executeRequest(HttpRequest request) {
-        logger.debug("Executing '{}' request at '{}'", request.method(), request.uri());
+        String maskedUri = request.uri().toString();
+        if ("ipapi.co".equalsIgnoreCase(request.uri().getHost())) {
+            maskedUri = maskedUri.replaceFirst(
+                    "(?<=ipapi\\.co/)(\\d{1,3}(?:\\.\\d{1,3}){3}|\\[[0-9a-fA-F:]+\\])",
+                    "***"
+            );
+        }
+        logger.debug("Executing '{}' request at '{}'", request.method(), maskedUri);
 
         try {
             return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());

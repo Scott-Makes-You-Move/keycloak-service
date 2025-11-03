@@ -56,7 +56,7 @@ public class UserEventListenerProvider implements EventListenerProvider {
     }
 
     private void handleAccountEvent(OperationType operationType, String userId, String ipAddress) {
-        logger.info("Handling account event. Operation type: [{}], user id: [{}]", operationType, userId);
+        logger.info("Handling account event. Operation type: '{}', user: '{}'", operationType, userId);
         UserModel user = session.users().getUserById(session.getContext().getRealm(), userId);
         String timezone = geoClient.getTimezone(ipAddress);
 
@@ -64,7 +64,7 @@ public class UserEventListenerProvider implements EventListenerProvider {
             case CREATE -> user.setEnabled(false);
             case UPDATE -> updateUser(user, timezone);
             case DELETE -> accountClient.executeDeleteAccountRequest(userId);
-            default -> logger.warn("Unknown operation operationType [{}]", operationType);
+            default -> logger.warn("Unknown operation operationType '{}'", operationType);
         }
     }
 
