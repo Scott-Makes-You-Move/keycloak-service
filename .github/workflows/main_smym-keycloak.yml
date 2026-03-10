@@ -9,6 +9,15 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  APPLICATION_PUBLISH_PROFILE: ${{ secrets.APP_PUBLISH_PROFILE }}
+  WEBAPP_NAME: 'smym-keycloak'
+  ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+  ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+  ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+  IMAGE_NAME: keycloak-service
+  IMAGE_TAG: 1.0.0
+
 jobs:
   build:
     runs-on: 'ubuntu-latest'
@@ -22,15 +31,15 @@ jobs:
     - name: Log in to registry
       uses: docker/login-action@v2
       with:
-        registry: https://smymregistry.azurecr.io/
-        username: ${{ secrets.AzureAppService_ContainerUsername_91017532053f4ce1a1cee81d17b2a8f2 }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_4edce734ba534eb9a49f4d0eb5757242 }}
+        registry: ${{ env.ACR_LOGIN_SERVER }}
+        username: ${{ env.ACR_USERNAME }}
+        password: ${{ env.ACR_PASSWORD }}
 
     - name: Build and push container image to registry
       uses: docker/build-push-action@v3
       with:
         push: true
-        tags: smymregistry.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_91017532053f4ce1a1cee81d17b2a8f2 }}/smym-keycloak-service:${{ github.sha }}
+        tags: ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
         file: ./Dockerfile
 
   deploy:
@@ -41,11 +50,11 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-    - name: Deploy to Azure Web App
+    - name: Deploy container image to Azure Web App
       id: deploy-to-webapp
-      uses: azure/webapps-deploy@v2
+      uses: azure/webapps-deploy@v3
       with:
-        app-name: 'smym-keycloak'
-        slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_172ebd19ef684a7f959ad0f261509593 }}
-        images: 'smymregistry.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_91017532053f4ce1a1cee81d17b2a8f2 }}/smym-keycloak-service:${{ github.sha }}'
+        app-name: ${{ env.WEBAPP_NAME }}
+        slot-name: "Production"
+        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+        images: "${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"

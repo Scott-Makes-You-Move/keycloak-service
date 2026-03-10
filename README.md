@@ -53,6 +53,6 @@ mvn clean package
 
 The built JAR is located in:
 ```
-target/keycloak-extensions-1.0-SNAPSHOT.jar
+target/keycloak-extensions-*.jar
 ```
 This is copied into the Keycloak service during the Docker build process.
