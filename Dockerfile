@@ -17,7 +17,7 @@ ENV KEYCLOAK_EXTENSIONS_VERSION=1.0.0
 
 WORKDIR /opt/keycloak
 
-COPY --from=extensions-builder /build/keycloak-extensions/target/${KEYCLOAK_EXTENSIONS_VERSION}.jar /opt/keycloak/providers/
+COPY --from=extensions-builder /build/keycloak-extensions/target/keycloak-extensions-${KEYCLOAK_EXTENSIONS_VERSION}.jar /opt/keycloak/providers/
 COPY --from=extensions-builder /build/themes/ /opt/keycloak/themes/
 
 RUN /opt/keycloak/bin/kc.sh build
