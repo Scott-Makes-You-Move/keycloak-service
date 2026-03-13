@@ -1,0 +1,11 @@
+{{- if .Values.realmImport.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "chart.fullname" . }}-realm
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+data:
+  realm-export.json: |-
+    {{- .Files.Get "files/realm-export.json" | nindent 4 }}
+{{- end }}

@@ -1,0 +1,53 @@
+replicaCount: 1
+
+image:
+  repository: smymregistry.azurecr.io/keycloak-service
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
+  hosts:
+    - host: keycloak.scottmakesyoumove.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: keycloak-tls
+      hosts:
+        - keycloak.scottmakesyoumove.com
+
+keycloak:
+  hostname: keycloak.scottmakesyoumove.com
+  proxy: edge
+  httpInsecureRequests: permitted
+  admin:
+    username: admin
+    password: ""
+
+database:
+  vendor: postgres
+  host: <your-postgres-host>
+  port: 5432
+  name: keycloak
+  username: admin
+  password: ""
+
+realmImport:
+  enabled: true
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: "2"
+    memory: 1Gi
