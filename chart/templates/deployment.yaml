@@ -5,9 +5,7 @@ metadata:
   labels:
     {{- include "chart.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
       {{- include "chart.selectorLabels" . | nindent 6 }}
@@ -27,9 +25,6 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if .Values.serviceAccount.create }}
-      serviceAccountName: {{ include "chart.serviceAccountName" . }}
-      {{- end }}
       {{- with .Values.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
@@ -42,19 +37,17 @@ spec:
           {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- if .Values.realmImport.enabled }}
-          command: ["/opt/keycloak/bin/kc.sh"]
-          args: ["start", "--optimized", "--import-realm"]
-          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          env:
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
           envFrom:
-            - configMapRef:
-                name: {{ include "chart.fullname" . }}-config
-            - secretRef:
-                name: {{ include "chart.fullname" . }}
+            {{- toYaml .Values.envFrom | nindent 12 }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
@@ -67,18 +60,6 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- if .Values.realmImport.enabled }}
-          volumeMounts:
-            - name: realm-import
-              mountPath: /opt/keycloak/data/import
-              readOnly: true
-          {{- end }}
-      {{- if .Values.realmImport.enabled }}
-      volumes:
-        - name: realm-import
-          configMap:
-            name: {{ include "chart.fullname" . }}-realm
-      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

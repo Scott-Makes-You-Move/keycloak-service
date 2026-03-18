@@ -5,6 +5,22 @@ image:
   tag: "1.0.0"
   pullPolicy: IfNotPresent
 
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: "2"
+    memory: 1Gi
+
+env: {}
+
+envFrom:
+  - configMapRef:
+      name: keycloak-service-config
+  - secretRef:
+      name: keycloak-sealed-secret
+
 service:
   type: ClusterIP
   port: 8080
@@ -24,30 +40,3 @@ ingress:
     - secretName: keycloak-tls
       hosts:
         - keycloak.scottmakesyoumove.com
-
-keycloak:
-  hostname: keycloak.scottmakesyoumove.com
-  proxy: edge
-  httpInsecureRequests: permitted
-  admin:
-    username: admin
-    password: ""
-
-database:
-  vendor: postgres
-  host: <your-postgres-host>
-  port: 5432
-  name: keycloak
-  username: admin
-  password: ""
-
-realmImport:
-  enabled: true
-
-resources:
-  requests:
-    cpu: 500m
-    memory: 512Mi
-  limits:
-    cpu: "2"
-    memory: 1Gi
