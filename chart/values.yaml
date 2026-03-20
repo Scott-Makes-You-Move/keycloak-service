@@ -1,3 +1,7 @@
+# Default values for chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
 replicaCount: 1
 
 image:
@@ -29,14 +33,9 @@ ingress:
   enabled: true
   className: nginx
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
   hosts:
-    - host: keycloak.scottmakesyoumove.com
+    - host: keycloak.local
       paths:
         - path: /
           pathType: Prefix
-  tls:
-    - secretName: keycloak-tls
-      hosts:
-        - keycloak.scottmakesyoumove.com
