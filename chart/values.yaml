@@ -37,7 +37,7 @@ ingress:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
     nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
   hosts:
-    - host: keycloak.local
+    - host: keycloak.scottmakesyoumove.com
       paths:
         - path: /
           pathType: Prefix
