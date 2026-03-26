@@ -12,7 +12,6 @@ import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static org.keycloak.utils.MediaType.APPLICATION_FORM_URLENCODED;
 
 public class KeycloakHttpClient extends AbstractHttpClient {
-    private static final Logger logger = LoggerFactory.getLogger(KeycloakHttpClient.class);
 
     public static final String TOKEN_REST_ENDPOINT = Objects.nonNull(System.getenv("TOKEN_REST_ENDPOINT"))
             ? System.getenv("TOKEN_REST_ENDPOINT")
@@ -36,16 +35,8 @@ public class KeycloakHttpClient extends AbstractHttpClient {
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
 
-        logger.info("GET Token Request uri '{}', requestBody '{}'", getTokenRequest.uri(), requestBody);
-
         var response = executeRequest(getTokenRequest);
-
-        logger.info("GET Token Response '{}'", response.statusCode());
-        logger.info("GET Token Response Body '{}'", response.body());
-
         Token token = mapToObject(response.body(), Token.class);
-
-        logger.info("GET Token Access Token '{}'", token.accessToken());
 
         return token.accessToken();
     }

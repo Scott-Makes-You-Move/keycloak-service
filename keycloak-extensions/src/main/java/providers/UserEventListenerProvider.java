@@ -40,8 +40,7 @@ public class UserEventListenerProvider implements EventListenerProvider {
 
             if (resourcePath.startsWith(USERS_RESOURCE_PATH)) {
                 String userId = resourcePath.substring(USERS_RESOURCE_PATH.length());
-                String ipAddress = adminEvent.getAuthDetails().getIpAddress();
-                handleAccountEvent(operationType, userId, ipAddress);
+                handleAccountEvent(operationType, userId);
             }
         }
     }
@@ -51,7 +50,7 @@ public class UserEventListenerProvider implements EventListenerProvider {
         // Nothing to do here.
     }
 
-    private void handleAccountEvent(OperationType operationType, String userId, String ipAddress) {
+    private void handleAccountEvent(OperationType operationType, String userId) {
         logger.info("Handling account event. Operation type: '{}', user: '{}'", operationType, userId);
         UserModel user = session.users().getUserById(session.getContext().getRealm(), userId);
 
