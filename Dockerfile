@@ -5,7 +5,9 @@ WORKDIR /build
 COPY keycloak-extensions/ keycloak-extensions/
 COPY themes/ themes/
 
-RUN mvn clean package -f keycloak-extensions/pom.xml
+ARG KEYCLOAK_EXTENSIONS_VERSION
+RUN mvn versions:set -DnewVersion=${KEYCLOAK_EXTENSIONS_VERSION} -DgenerateBackupPoms=false -f keycloak-extensions/pom.xml && \
+    mvn clean package -DskipTests -f keycloak-extensions/pom.xml
 
 # Stage 2: Build Keycloak with the extension AND themes
 FROM quay.io/keycloak/keycloak:26.0.2 AS keycloak-builder
@@ -15,7 +17,6 @@ ARG KEYCLOAK_EXTENSIONS_VERSION
 ENV KC_HEALTH_ENABLED=true
 ENV KC_METRICS_ENABLED=true
 ENV KC_DB=postgres
-ENV KEYCLOAK_EXTENSIONS_VERSION=${KEYCLOAK_EXTENSIONS_VERSION}
 
 WORKDIR /opt/keycloak
 
