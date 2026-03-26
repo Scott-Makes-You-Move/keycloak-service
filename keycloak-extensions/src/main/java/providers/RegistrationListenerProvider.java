@@ -16,6 +16,9 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Dummy comment
+ */
 public class RegistrationListenerProvider implements EventListenerProvider {
     private static final Logger logger = LoggerFactory.getLogger(RegistrationListenerProvider.class);
 
