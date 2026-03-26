@@ -13,7 +13,7 @@ FROM quay.io/keycloak/keycloak:26.0.2 AS keycloak-builder
 ENV KC_HEALTH_ENABLED=true
 ENV KC_METRICS_ENABLED=true
 ENV KC_DB=postgres
-ENV KEYCLOAK_EXTENSIONS_VERSION=1.0.0
+ENV KEYCLOAK_EXTENSIONS_VERSION=1.0.1
 
 WORKDIR /opt/keycloak
 

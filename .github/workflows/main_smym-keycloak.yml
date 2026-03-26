@@ -11,7 +11,7 @@ env:
   ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
   ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
   IMAGE_NAME: keycloak-service
-  IMAGE_TAG: 1.0.0
+  IMAGE_TAG: 1.0.1
 
 jobs:
   build:

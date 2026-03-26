@@ -1,7 +1,6 @@
 package providers;
 
 import clients.AccountHttpClient;
-import clients.GeoHttpClient;
 import exceptions.HttpClientException;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
@@ -13,8 +12,6 @@ import org.keycloak.models.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.Executors;
-
 public class UserEventListenerProvider implements EventListenerProvider {
     private static final Logger logger = LoggerFactory.getLogger(UserEventListenerProvider.class);
 
@@ -22,7 +19,6 @@ public class UserEventListenerProvider implements EventListenerProvider {
 
     private final KeycloakSession session;
     private final AccountHttpClient accountClient = new AccountHttpClient();
-    private final GeoHttpClient geoClient = new GeoHttpClient();
 
     public UserEventListenerProvider(KeycloakSession session) {
         this.session = session;
@@ -58,21 +54,20 @@ public class UserEventListenerProvider implements EventListenerProvider {
     private void handleAccountEvent(OperationType operationType, String userId, String ipAddress) {
         logger.info("Handling account event. Operation type: '{}', user: '{}'", operationType, userId);
         UserModel user = session.users().getUserById(session.getContext().getRealm(), userId);
-        String timezone = geoClient.getTimezone(ipAddress);
 
         switch (operationType) {
             case CREATE -> user.setEnabled(false);
-            case UPDATE -> updateUser(user, timezone);
+            case UPDATE -> updateUser(user);
             case DELETE -> accountClient.executeDeleteAccountRequest(userId);
             default -> logger.warn("Unknown operation operationType '{}'", operationType);
         }
     }
 
-    private void updateUser(UserModel userModel, String timezone) {
+    private void updateUser(UserModel userModel) {
         if (userModel.isEnabled()) {
             runInVirtualThread(() -> {
                 try {
-                    accountClient.executeCreateAccountRequest(userModel.getId(), timezone);
+                    accountClient.executeCreateAccountRequest(userModel.getId());
                 } catch (Exception e) {
                     throw new HttpClientException("Exception while running task in virtual thread", e);
                 }

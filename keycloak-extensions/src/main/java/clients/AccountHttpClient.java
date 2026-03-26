@@ -22,9 +22,9 @@ public class AccountHttpClient extends AbstractHttpClient {
 
     private static final KeycloakHttpClient KEYCLOAK_CLIENT = new KeycloakHttpClient();
 
-    public void executeCreateAccountRequest(String userId, String timezone) {
+    public void executeCreateAccountRequest(String userId) {
         String accessToken = KEYCLOAK_CLIENT.getAccessToken();
-        var requestBody = createAccountRequestBody(userId, timezone);
+        var requestBody = createAccountRequestBody(userId);
         var createAccountRequest = HttpRequest.newBuilder(URI.create(ACCOUNT_REST_ENDPOINT))
                 .header(CONTENT_TYPE, APPLICATION_JSON)
                 .headers(AUTHORIZATION, String.format("Bearer %s", accessToken))
@@ -32,7 +32,7 @@ public class AccountHttpClient extends AbstractHttpClient {
                 .build();
 
         var response = executeRequest(createAccountRequest);
-        logger.info("POST Account Response [{}]", response.statusCode());
+        logger.info("POST Account Response '{}'", response.statusCode());
     }
 
     public void executeDeleteAccountRequest(String userId) {
@@ -44,11 +44,11 @@ public class AccountHttpClient extends AbstractHttpClient {
                 .build();
 
         var response = executeRequest(deleteAccountRequest);
-        logger.info("DELETE Account Response [{}]", response.statusCode());
+        logger.info("DELETE Account Response '{}'", response.statusCode());
     }
 
-    private HttpRequest.BodyPublisher createAccountRequestBody(String userId, String ipAddress) {
-        String requestBody = "{\"accountId\": \"%s\", \"timezone\": \"%s\"}".formatted(userId, ipAddress);
+    private HttpRequest.BodyPublisher createAccountRequestBody(String userId) {
+        String requestBody = "{\"accountId\": \"%s\"}".formatted(userId);
         return HttpRequest.BodyPublishers.ofString(requestBody);
     }
 }
