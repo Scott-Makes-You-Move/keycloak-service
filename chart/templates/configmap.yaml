@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: keycloak-service-config
 data:
-  ACCOUNT_REST_ENDPOINT: "http://backend.scottmakesyoumove.com/api/v1/account"
+  ACCOUNT_REST_ENDPOINT: "https://backend.scottmakesyoumove.com/api/v1/account"
   CLIENT_ID: "event-listener-client"
   DOCKER_REGISTRY_SERVER_URL: "https://smymregistry.azurecr.io"
   DOCKER_REGISTRY_SERVER_USERNAME: "smymregistry"
@@ -20,8 +20,8 @@ data:
   KC_PROXY: "edge"
   KC_PROXY_HEADERS: "xforwarded"
   KC_QUARKUS_HTTP_INSECURE_REQUESTS: "redirect"
-  KEYCLOAK_FRONTEND_URL: "http://keycloak.scottmakesyoumove.com"
-  TOKEN_REST_ENDPOINT: "http://keycloak.scottmakesyoumove.com/realms/smym-dev/protocol/openid-connect/token"
+  KEYCLOAK_FRONTEND_URL: "https://keycloak.scottmakesyoumove.com"
+  TOKEN_REST_ENDPOINT: "https://keycloak.scottmakesyoumove.com/realms/smym-dev/protocol/openid-connect/token"
   WEBSITE_HTTPLOGGING_RETENTION_DAYS: "30"
   WEBSITES_CONTAINER_START_TIME: "3600"
   WEBSITES_ENABLE_APP_SERVICE_STORAGE: "true"
