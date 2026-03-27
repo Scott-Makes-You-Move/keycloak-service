@@ -1,0 +1,45 @@
+# Default values for chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: smymregistry.azurecr.io/keycloak
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: "2"
+    memory: 1Gi
+
+env:
+  KC_HOSTNAME: "http://keycloak.local"
+  KC_HOSTNAME_ADMIN_URL: "http://keycloak.local"
+  KC_HOSTNAME_URL: "http://keycloak.local"
+  KEYCLOAK_FRONTEND_URL: "http://keycloak.local"
+
+envFrom:
+  - configMapRef:
+      name: keycloak-configmap
+  - secretRef:
+      name: keycloak-sealed-secrets
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+  hosts:
+    - host: keycloak.local
+      paths:
+        - path: /
+          pathType: Prefix

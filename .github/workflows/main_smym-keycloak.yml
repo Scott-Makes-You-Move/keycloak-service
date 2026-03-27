@@ -10,7 +10,7 @@ env:
   ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
   ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
   ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
-  IMAGE_NAME: keycloak-service
+  IMAGE_NAME: keycloak
   JAVA_VERSION: '21'
   JAVA_DISTRIBUTION: 'microsoft'
 
@@ -104,7 +104,9 @@ jobs:
       - name: Deploy Keycloak
         run: |
           helm upgrade --install keycloak ./chart \
-            --namespace default \
+            --namespace keycloak \
+            --create-namespace \
+            -f ./chart/values.yaml \
             --set image.repository=${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }} \
             --set image.tag=${{ needs.build.outputs.image_tag }} \
             --wait

@@ -1,27 +1,14 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: keycloak-service-config
+  name: backend-configmap
 data:
-  ACCOUNT_REST_ENDPOINT: "https://backend.scottmakesyoumove.com/api/v1/account"
-  CLIENT_ID: "event-listener-client"
-  DOCKER_REGISTRY_SERVER_URL: "https://smymregistry.azurecr.io"
-  DOCKER_REGISTRY_SERVER_USERNAME: "smymregistry"
-  GRANT_TYPE: "client_credentials"
   KC_DB: "postgres"
   KC_DB_URL: "jdbc:postgresql://smym-db-server.postgres.database.azure.com:5432/keycloak?sslmode=require"
-  KC_HOSTNAME: "https://keycloak.scottmakesyoumove.com"
-  KC_HOSTNAME_ADMIN_URL: "http://keycloak-keycloak-chart.default.svc.cluster.local:8080"
   KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "false"
   KC_HOSTNAME_STRICT: "false"
   KC_HOSTNAME_STRICT_HTTPS: "true"
-  KC_HOSTNAME_URL: "https://keycloak.scottmakesyoumove.com"
   KC_HTTP_ENABLED: "true"
   KC_PROXY: "edge"
   KC_PROXY_HEADERS: "xforwarded"
   KC_QUARKUS_HTTP_INSECURE_REQUESTS: "redirect"
-  KEYCLOAK_FRONTEND_URL: "https://keycloak.scottmakesyoumove.com"
-  TOKEN_REST_ENDPOINT: "https://keycloak.scottmakesyoumove.com/realms/smym-dev/protocol/openid-connect/token"
-  WEBSITE_HTTPLOGGING_RETENTION_DAYS: "30"
-  WEBSITES_CONTAINER_START_TIME: "3600"
-  WEBSITES_ENABLE_APP_SERVICE_STORAGE: "true"

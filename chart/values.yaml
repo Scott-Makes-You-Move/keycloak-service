@@ -5,8 +5,8 @@
 replicaCount: 1
 
 image:
-  repository: smymregistry.azurecr.io/keycloak-service
-  tag: "1.0.1"
+  repository: smymregistry.azurecr.io/keycloak
+  tag: "1.0.0-SNAPSHOT"
   pullPolicy: IfNotPresent
 
 resources:
@@ -17,13 +17,17 @@ resources:
     cpu: "2"
     memory: 1Gi
 
-env: {}
+env:
+  KC_HOSTNAME: "https://keycloak.scottmakesyoumove.com"
+  KC_HOSTNAME_ADMIN_URL: "http://smym-keycloak.keycloak.svc.cluster.local:8080"
+  KC_HOSTNAME_URL: "https://keycloak.scottmakesyoumove.com"
+  KEYCLOAK_FRONTEND_URL: "https://keycloak.scottmakesyoumove.com"
 
 envFrom:
   - configMapRef:
-      name: keycloak-service-config
+      name: keycloak-configmap
   - secretRef:
-      name: keycloak-sealed-secret
+      name: keycloak-sealed-secrets
 
 service:
   type: ClusterIP

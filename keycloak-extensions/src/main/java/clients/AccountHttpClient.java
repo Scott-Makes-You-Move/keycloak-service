@@ -1,11 +1,11 @@
 package clients;
 
+import models.AccountRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
-import java.util.Objects;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.MediaType.WILDCARD;
@@ -16,16 +16,12 @@ import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 public class AccountHttpClient extends AbstractHttpClient {
     private static final Logger logger = LoggerFactory.getLogger(AccountHttpClient.class);
 
-    public static final String ACCOUNT_REST_ENDPOINT = Objects.nonNull(System.getenv("ACCOUNT_REST_ENDPOINT"))
-            ? System.getenv("ACCOUNT_REST_ENDPOINT")
-            : "http://host.docker.internal:9000/api/v1/account";
-
     private static final KeycloakHttpClient KEYCLOAK_CLIENT = new KeycloakHttpClient();
 
-    public void executeCreateAccountRequest(String userId) {
-        String accessToken = KEYCLOAK_CLIENT.getAccessToken();
-        var requestBody = createAccountRequestBody(userId);
-        var createAccountRequest = HttpRequest.newBuilder(URI.create(ACCOUNT_REST_ENDPOINT))
+    public void executeCreateAccountRequest(AccountRequest request) {
+        String accessToken = KEYCLOAK_CLIENT.getAccessToken(request.clientId(), request.grantType(), request.clientSecret(), request.tokenRestEndpoint());
+        var requestBody = createAccountRequestBody(request.userId());
+        var createAccountRequest = HttpRequest.newBuilder(URI.create(request.accountEndpoint()))
                 .header(CONTENT_TYPE, APPLICATION_JSON)
                 .headers(AUTHORIZATION, String.format("Bearer %s", accessToken))
                 .POST(requestBody)
@@ -35,9 +31,9 @@ public class AccountHttpClient extends AbstractHttpClient {
         logger.info("POST Account Response '{}'", response.statusCode());
     }
 
-    public void executeDeleteAccountRequest(String userId) {
-        String accessToken = KEYCLOAK_CLIENT.getAccessToken();
-        var deleteAccountRequest = HttpRequest.newBuilder(URI.create("%s/%s".formatted(ACCOUNT_REST_ENDPOINT, userId)))
+    public void executeDeleteAccountRequest(AccountRequest request) {
+        String accessToken = KEYCLOAK_CLIENT.getAccessToken(request.clientId(), request.grantType(), request.clientSecret(), request.tokenRestEndpoint());
+        var deleteAccountRequest = HttpRequest.newBuilder(URI.create("%s/%s".formatted(request.accountEndpoint(), request.userId())))
                 .header(ACCEPT, WILDCARD)
                 .headers(AUTHORIZATION, "Bearer %s".formatted(accessToken))
                 .DELETE()
