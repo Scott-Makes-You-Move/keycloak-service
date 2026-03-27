@@ -14,18 +14,11 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.Map;
-import java.util.Objects;
 
-/**
- * Dummy comment
- */
 public class RegistrationListenerProvider implements EventListenerProvider {
     private static final Logger logger = LoggerFactory.getLogger(RegistrationListenerProvider.class);
 
     private final KeycloakSession session;
-    public static final String APPROVAL_RECIPIENT = Objects.nonNull(System.getenv("APPROVAL_RECIPIENT"))
-            ? System.getenv("APPROVAL_RECIPIENT")
-            : "deroosean@gmail.com";
 
     public RegistrationListenerProvider(KeycloakSession session) {
         this.session = session;
@@ -58,10 +51,11 @@ public class RegistrationListenerProvider implements EventListenerProvider {
     private void sendEmailToApprover(UserModel newUser, RealmModel realm) {
         EmailSenderProvider sender = session.getProvider(EmailSenderProvider.class);
         Map<String, String> smtpConfig = realm.getSmtpConfig();
+        String approvalRecipient = session.getContext().getRealm().getAttribute("approval_recipient");
 
         String subject = "New user registration pending approval: " + newUser.getUsername();
 
-        logger.info("Sending email to approval recipient: '{}' with subject: '{}'", APPROVAL_RECIPIENT, subject);
+        logger.info("Sending email to approval recipient: '{}' with subject: '{}'", approvalRecipient, subject);
 
         StringBuilder body = new StringBuilder();
         body.append("A new user registered and requires approval:\n\n");
@@ -71,7 +65,7 @@ public class RegistrationListenerProvider implements EventListenerProvider {
         body.append("Please review and enable the account in the Keycloak Admin Console.\n");
 
         try {
-            sender.send(smtpConfig, APPROVAL_RECIPIENT, subject, body.toString(), null);
+            sender.send(smtpConfig, approvalRecipient, subject, body.toString(), null);
         } catch (EmailException e) {
             logger.error("Error sending email to approval recipient", e);
         }
