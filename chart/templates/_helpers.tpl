@@ -1,5 +1,5 @@
 {{- define "smym-keycloak.fullname" -}}
-{{- .Chart.Name }}
+{{- .Release.Name }}
 {{- end }}
 
 {{- define "smym-keycloak.labels" -}}
